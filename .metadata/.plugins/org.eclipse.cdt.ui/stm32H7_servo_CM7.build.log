@@ -1,0 +1,10 @@
+18:59:39 **** Build of configuration Debug for project stm32H7_servo_CM7 ****
+make -j12 all 
+arm-none-eabi-size  stm32H7_servo_CM7.elf 
+   text	   data	    bss	    dec	    hex	filename
+  20688	     44	   1820	  22552	   5818	stm32H7_servo_CM7.elf
+Finished building: default.size.stdout
+ 
+
+18:59:39 Build Finished. 0 errors, 0 warnings. (took 394ms)
+
