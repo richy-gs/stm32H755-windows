@@ -262,8 +262,10 @@ Error_Handler();
   {
 	  Servo_SetAngle(60);
 	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	  HAL_Delay(2000);
 	  Servo_SetAngle(-50);
 	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	  HAL_Delay(2000);
 
 //	  Servo_SetAngle(-40);
 //	  HAL_Delay(2000);
