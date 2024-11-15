@@ -1,19 +1,19 @@
 ///*
-// * robot_movement.h
-// *
-// *  Created on: Nov 12, 2024
-// *      Author: jesus
-// */
+//* robot_movement.h
+//*
+//*  Created on: Nov 12, 2024
+//*      Author: jesus
+//*/
 //
 //#ifndef INC_ROBOT_MOVEMENT_H_
 //#define INC_ROBOT_MOVEMENT_H_
 //
 //// Definición de direcciones
 //typedef enum {
-//    FORWARD,    // Adelante
-//    BACKWARD,   // Atrás
-//    LEFT,       // Izquierda
-//    RIGHT       // Derecha
+//   FORWARD,    // Adelante
+//   BACKWARD,   // Atrás
+//   LEFT,       // Izquierda
+//   RIGHT       // Derecha
 //} Direction;
 //
 //// Prototipos de funciones

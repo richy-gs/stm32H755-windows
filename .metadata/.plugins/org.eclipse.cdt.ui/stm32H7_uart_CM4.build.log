@@ -1,4 +1,4 @@
-18:59:39 **** Build of configuration Debug for project stm32H7_uart_CM4 ****
+19:22:07 **** Build of configuration Debug for project stm32H7_uart_CM4 ****
 make -j12 all 
 arm-none-eabi-size  stm32H7_uart_CM4.elf 
    text	   data	    bss	    dec	    hex	filename
@@ -6,5 +6,5 @@ arm-none-eabi-size  stm32H7_uart_CM4.elf
 Finished building: default.size.stdout
  
 
-18:59:40 Build Finished. 0 errors, 0 warnings. (took 393ms)
+19:22:07 Build Finished. 0 errors, 0 warnings. (took 193ms)
 

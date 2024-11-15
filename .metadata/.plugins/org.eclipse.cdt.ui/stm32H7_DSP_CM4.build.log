@@ -1,0 +1,16 @@
+19:22:01 **** Build of configuration Debug for project stm32H7_DSP_CM4 ****
+make -j12 all 
+arm-none-eabi-gcc -o "stm32H7_DSP_CM4.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\jesus\STM32CubeIDE\workspace_1.16.0\stm32H7_DSP\CM4\STM32H755ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32H7_DSP_CM4.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: stm32H7_DSP_CM4.elf
+ 
+arm-none-eabi-size  stm32H7_DSP_CM4.elf 
+arm-none-eabi-objdump -h -S stm32H7_DSP_CM4.elf  > "stm32H7_DSP_CM4.list"
+   text	   data	    bss	    dec	    hex	filename
+   4172	     16	   1568	   5756	   167c	stm32H7_DSP_CM4.elf
+Finished building: default.size.stdout
+ 
+Finished building: stm32H7_DSP_CM4.list
+ 
+
+19:22:02 Build Finished. 0 errors, 0 warnings. (took 499ms)
+

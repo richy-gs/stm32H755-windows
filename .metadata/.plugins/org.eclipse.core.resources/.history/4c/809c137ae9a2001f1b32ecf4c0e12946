@@ -1,0 +1,101 @@
+/*
+* motor_control.c
+*
+*  Created on: Nov 12, 2024
+*      Author: jesus
+*/
+#include "motor_control.h"
+#include "stm32h7xx_hal.h" // Suponiendo que uses STM32 o una plataforma similar
+
+// Definir los pines de los motores
+#define MOTOR_LEFT_PIN_FORWARD   GPIO_PIN_0
+#define MOTOR_LEFT_PIN_BACKWARD  GPIO_PIN_1
+#define MOTOR_RIGHT_PIN_FORWARD  GPIO_PIN_2
+#define MOTOR_RIGHT_PIN_BACKWARD GPIO_PIN_3
+
+extern GPIO_InitTypeDef GPIO_InitStruct; // Asumimos que usas la HAL de STM32
+
+void Motor_Init(void)
+{
+	  if (HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1) != HAL_OK)
+	  {
+	  	  Error_Handler();
+	  }
+	  __HAL_TIM_SET_COMPARE(&htim14, TIM_CHANNEL_1, 1500);
+}
+
+void Motor_SetSpeed(int speed) // Range from -100 to 100
+{
+	uint32_t change = 10;
+	float delay = 10;
+	uint32_t x = TIM14->CRR1;
+
+	if (x < 1490) // < 1500 forward
+	{
+		while(x <= 1500)
+		{
+			x += change;
+			TIM14->CCR1 = (uint32_t) x;
+			HAL_Delay(delay);
+		}
+	} else if (TIM14->CRR1 > 1510) // > 1500 back
+	{
+		while(x >= 1500)
+		{
+			x -= change;
+			TIM14->CCR1 = (uint32_t) x;
+			HAL_Delay(delay);
+		}
+	} else
+	{
+		TIM14->CCR1 = (uint32_t) x;
+	}
+
+	HAL_Delay(4000);
+   if (leftSpeed > 0) {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_FORWARD, GPIO_PIN_SET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_BACKWARD, GPIO_PIN_RESET);
+   } else if (leftSpeed < 0) {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_FORWARD, GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_BACKWARD, GPIO_PIN_SET);
+   } else {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_FORWARD, GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_LEFT_PIN_BACKWARD, GPIO_PIN_RESET);
+   }
+
+   if (rightSpeed > 0) {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_FORWARD, GPIO_PIN_SET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_BACKWARD, GPIO_PIN_RESET);
+   } else if (rightSpeed < 0) {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_FORWARD, GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_BACKWARD, GPIO_PIN_SET);
+   } else {
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_FORWARD, GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOA, MOTOR_RIGHT_PIN_BACKWARD, GPIO_PIN_RESET);
+   }
+}
+
+void Motor_Move(MotorDirection direction)
+{
+   switch(direction)
+   {
+       case FORWARD:
+           Motor_SetSpeed(100, 100); // Ajusta la velocidad
+           break;
+       case BACKWARD:
+           Motor_SetSpeed(-100, -100);
+           break;
+       case LEFT:
+           Motor_SetSpeed(50, 100);
+           break;
+       case RIGHT:
+           Motor_SetSpeed(100, 50);
+           break;
+   }
+}
+
+void Motor_Stop(void)
+{
+   // Detiene todos los motores
+   Motor_SetSpeed(0, 0);
+}
