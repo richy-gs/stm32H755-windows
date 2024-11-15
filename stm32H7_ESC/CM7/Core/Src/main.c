@@ -52,9 +52,18 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 typedef enum {
-   FORWARD,
-   BACKWARD,
-} MotorDirection;
+   mov_front,
+   mov_back,
+   mov_left,
+   mov_right
+} MovementType;
+
+typedef struct {
+  MovementType movement;
+  int time;
+  int angle;
+  int speed;
+} MovementRoutine;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,7 +73,14 @@ static void MX_USART3_UART_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM13_Init(void);
 /* USER CODE BEGIN PFP */
-void Turning_SetAngle(float angle);
+void Motor_Init(void);
+void Motor_SetSpeed2(int speed, int delayTime);
+void Motor_Move(MovementType direction, int delayTime, int angle);
+void Motor_Stop(void);
+void ExecuteMovement(MovementRoutine *movement);
+void Servo_Init(void);
+void Servo_SetAngle(int angle);
+void routine1(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -79,39 +95,6 @@ void Motor_Init(void)
 	  __HAL_TIM_SET_COMPARE(&htim14, TIM_CHANNEL_1, 1500);
 }
 
-//void Motor_SetSpeed(int speed, int delayTime) // Range from -100 to 100
-//{
-//	const uint32_t change = 10;
-//	uint32_t delay = 10;
-//	uint32_t x = TIM14->CCR1;
-//
-//	if(speed > 100) speed = 100;
-//	else if (speed < -100) speed = -100;
-//
-//	int newSpeed = 1500 + (speed*4);
-//
-//	if (newSpeed - x > 0)
-//	{
-//		while(x < newSpeed)
-//		{
-//			x += change;
-//			TIM14->CCR1 = (uint32_t) x;
-//			HAL_Delay(delay);
-//		}
-//	} else if (newSpeed - x < 0)
-//	{
-//		while(x > newSpeed)
-//		{
-//			x -= change;
-//			TIM14->CCR1 = (uint32_t) x;
-//			HAL_Delay(delay);
-//		}
-//	} else {
-//		TIM14->CCR1 = (uint32_t) x;
-//	}
-//	HAL_Delay(delayTime);
-//}
-
 void Motor_SetSpeed2(int speed, int delayTime) // Range from -100 to 100
 {
 	const uint32_t change = 10;
@@ -121,7 +104,7 @@ void Motor_SetSpeed2(int speed, int delayTime) // Range from -100 to 100
 	if(speed > 100) speed = 100;
 	else if (speed < -100) speed = -100;
 
-	int newSpeed = 1500 + (speed*4);
+	int newSpeed = 1500 + (speed*5);
 
 	while(abs(newSpeed - x) > 10)
 	{
@@ -134,15 +117,23 @@ void Motor_SetSpeed2(int speed, int delayTime) // Range from -100 to 100
 	HAL_Delay(delayTime);
 }
 
-void Motor_Move(MotorDirection direction, int delayTime)
+void Motor_Move(MovementType direction, int delayTime, int angle)
 {
    switch(direction)
    {
-       case FORWARD:
-           Motor_SetSpeed2(-80,delayTime); // Ajusta la velocidad
+       case mov_front:
+           Motor_SetSpeed2(-100,delayTime); // Ajusta la velocidad
            break;
-       case BACKWARD:
-           Motor_SetSpeed2(80,delayTime);
+       case mov_back:
+           Motor_SetSpeed2(100,delayTime);
+           break;
+       case mov_left:
+           Servo_SetAngle(angle);
+           Motor_SetSpeed2(100,delayTime);
+           break;      
+       case mov_right:
+           Servo_SetAngle(angle);
+           Motor_SetSpeed2(100,delayTime);
            break;
        default:
     	   Motor_SetSpeed2(0,delayTime);
@@ -153,6 +144,28 @@ void Motor_Move(MotorDirection direction, int delayTime)
 void Motor_Stop(void)
 {
    Motor_SetSpeed2(0,1000);
+}
+
+void ExecuteMovement(MovementRoutine *movement)
+{
+  switch (movement -> movement)
+  {
+  case mov_front:
+	  Servo_SetAngle(movement->angle);
+	  Motor_SetSpeed2(movement->speed, movement->time);
+    break;
+  case mov_back:
+	  Servo_SetAngle(movement->angle);
+	  Motor_SetSpeed2(movement->speed, movement->time);
+  case mov_left:
+    Servo_SetAngle(movement->angle);
+    Motor_SetSpeed2(movement->speed, movement->time);
+  case mov_right:
+  Servo_SetAngle(movement->angle);
+    Motor_SetSpeed2(movement->speed, movement->time);
+  default:
+    break;
+  }
 }
 
 void Servo_Init(void)
@@ -186,6 +199,25 @@ void Servo_SetAngle(int angle)		// Angle betweeen
 		HAL_Delay(delay);
 	}
 	HAL_Delay(2000);
+}
+
+void routine1(void)
+{
+//  MovementType front = mov_front;
+//  MovementType back = mov_back;
+//  MovementType left = mov_left;
+//  MovementType right = mov_right;
+	MovementRoutine moveFrontInstance = {mov_front, 1000, 0, -100};
+	MovementRoutine moveRightInstance = {mov_right, 800, 60, -100};
+	MovementRoutine noMoveInstance = {mov_right, 6000, 0, 0};
+	MovementRoutine *moveFront = &moveFrontInstance;
+	MovementRoutine *moveRight = &moveRightInstance;
+	MovementRoutine *noMove = &noMoveInstance;
+  ExecuteMovement(moveFront);
+  ExecuteMovement(moveRight);
+  ExecuteMovement(moveFront);
+  ExecuteMovement(moveRight);
+  ExecuteMovement(noMove);
 }
 /* USER CODE END 0 */
 
@@ -254,17 +286,20 @@ Error_Handler();
   Servo_Init();
   Motor_Init();
   HAL_Delay(100);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  routine1();
+/*
 	  Servo_SetAngle(60);
 	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
 	  Servo_SetAngle(-50);
 	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
-
+*/
 //	  Servo_SetAngle(-40);
 //	  HAL_Delay(2000);
 
