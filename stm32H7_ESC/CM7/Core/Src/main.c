@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdlib.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,13 +63,6 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM13_Init(void);
-
-void Motor_Init(void);
-//void Motor_SetSpeed(int speed, int delayTime); // Range from -100 to 100
-void Motor_SetSpeed2(int speed, int delayTime); // Range from -100 to 100
-void Motor_Move(MotorDirection direction, int delayTime);
-void Motor_Stop(void);
-
 /* USER CODE BEGIN PFP */
 void Turning_SetAngle(float angle);
 /* USER CODE END PFP */
@@ -77,7 +70,6 @@ void Turning_SetAngle(float angle);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// Definiciones de dirección de los motores
 void Motor_Init(void)
 {
 	  if (HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1) != HAL_OK)
@@ -163,20 +155,36 @@ void Motor_Stop(void)
    Motor_SetSpeed2(0,1000);
 }
 
-void Turning_SetAngle(float angle) {
-    // Ajustar el ángulo al rango permitido
-    if (angle < -90.0f) angle = -90.0f;
-    if (angle > 90.0f)  angle = 90.0f;
+void Servo_Init(void)
+{
+	if (HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1) != HAL_OK)
+	  {
+		  Error_Handler();
+	  }
+	__HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1, 1500);
+}
 
-    int pulse;
-    if (angle <= 0.0f) {
-        // Mapear ángulos de -90 a 0 grados
-        pulse = (int)((80.0f / 90.0f) * (angle + 90.0f) + 130.0f);
-    } else {
-        // Mapear ángulos de 0 a 90 grados
-        pulse = (int)((50.0f / 90.0f) * angle + 210.0f);
-    }
-    __HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1, pulse);
+// Function to set the servo position (angle)
+void Servo_SetAngle(int angle)		// Angle betweeen
+{
+	const uint32_t change = 10;
+	uint32_t delay = 10;
+	uint32_t x = TIM13->CCR1;
+
+
+	if(angle > 60) angle = 60;
+	else if (angle < -50) angle = -50;
+
+	int newAngle = 1500 + (angle*9);
+
+	while(abs(newAngle - x) > 10)
+	{
+		if (newAngle > x) x = x + change;
+		else if (newAngle < x) x = x - change;
+
+		TIM13->CCR1 = (uint32_t) x;
+		HAL_Delay(delay);
+	}
 }
 /* USER CODE END 0 */
 
@@ -242,12 +250,7 @@ Error_Handler();
   MX_TIM14_Init();
   MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
-  if (HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1) != HAL_OK)
-  {
-  	  Error_Handler();
-  }
-  __HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1, 1500);
-
+  Servo_Init();
   Motor_Init();
   HAL_Delay(1500);
   /* USER CODE END 2 */
@@ -256,9 +259,24 @@ Error_Handler();
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  Motor_SetSpeed2(100,1000);
-	  Motor_SetSpeed2(-100,1000);
-	  Motor_SetSpeed2(0,1000);
+	  Servo_SetAngle(60);
+	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	  HAL_Delay(5000);
+	  Servo_SetAngle(-50);
+	  HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	  HAL_Delay(5000);
+
+//	  Servo_SetAngle(-40);
+//	  HAL_Delay(2000);
+
+
+//	  Servo_SetAngle(-30);
+//	  HAL_Delay(2000);
+//	  Servo_SetAngle(0);
+//	  HAL_Delay(2000);
+//	  Motor_SetSpeed2(100,1000);
+//	  Motor_SetSpeed2(-100,1000);
+//	  Motor_SetSpeed2(0,1000);
 
 /* 			PRUEBA  1			*/
 //	  Turning_SetAngle(0.0);
@@ -593,6 +611,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : PC1 PC4 PC5 */
   GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -608,6 +629,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LD1_Pin */
+  GPIO_InitStruct.Pin = LD1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LD1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;

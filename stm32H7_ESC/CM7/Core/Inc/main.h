@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define PWM_Servo_GPIO_Port GPIOF
 #define PWM_Pin GPIO_PIN_9
 #define PWM_GPIO_Port GPIOF
+#define LD1_Pin GPIO_PIN_0
+#define LD1_GPIO_Port GPIOB
 #define STLINK_RT_Pin GPIO_PIN_8
 #define STLINK_RT_GPIO_Port GPIOD
 #define STLINK_TX_Pin GPIO_PIN_9
