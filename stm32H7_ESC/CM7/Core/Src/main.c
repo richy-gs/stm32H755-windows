@@ -101,6 +101,7 @@ void Motor_SetSpeed2(int speed, int delayTime) // Range from -100 to 100
 	uint32_t delay = 10;
 	uint32_t x = TIM14->CCR1;
 
+	speed *= -1;
 	if(speed > 100) speed = 100;
 	else if (speed < -100) speed = -100;
 
@@ -153,16 +154,19 @@ void ExecuteMovement(MovementRoutine *movement)
   case mov_front:
 	  Servo_SetAngle(movement->angle);
 	  Motor_SetSpeed2(movement->speed, movement->time);
-    break;
+	  break;
   case mov_back:
 	  Servo_SetAngle(movement->angle);
 	  Motor_SetSpeed2(movement->speed, movement->time);
+	  break;
   case mov_left:
-    Servo_SetAngle(movement->angle);
-    Motor_SetSpeed2(movement->speed, movement->time);
+	  Servo_SetAngle(movement->angle);
+	  Motor_SetSpeed2(movement->speed, movement->time);
+	  break;
   case mov_right:
-  Servo_SetAngle(movement->angle);
-    Motor_SetSpeed2(movement->speed, movement->time);
+	  Servo_SetAngle(movement->angle);
+	  Motor_SetSpeed2(movement->speed, movement->time);
+	  break;
   default:
     break;
   }
@@ -203,21 +207,23 @@ void Servo_SetAngle(int angle)		// Angle betweeen
 
 void routine1(void)
 {
-//  MovementType front = mov_front;
-//  MovementType back = mov_back;
-//  MovementType left = mov_left;
-//  MovementType right = mov_right;
-	MovementRoutine moveFrontInstance = {mov_front, 1000, 0, -100};
-	MovementRoutine moveRightInstance = {mov_right, 800, 60, -100};
-	MovementRoutine noMoveInstance = {mov_right, 6000, 0, 0};
+	MovementRoutine moveFrontInstance = {mov_front, 800, 10, 100};
+	MovementRoutine moveRightInstance = {mov_right, 0, 50, 100};
+	MovementRoutine noMoveInstance = {mov_right, 500, 5, 0};
 	MovementRoutine *moveFront = &moveFrontInstance;
 	MovementRoutine *moveRight = &moveRightInstance;
 	MovementRoutine *noMove = &noMoveInstance;
-  ExecuteMovement(moveFront);
-  ExecuteMovement(moveRight);
-  ExecuteMovement(moveFront);
-  ExecuteMovement(moveRight);
-  ExecuteMovement(noMove);
+
+	while(1)
+	{
+		ExecuteMovement(moveFront);
+		ExecuteMovement(moveRight);
+		HAL_Delay(1300);
+		ExecuteMovement(moveFront);
+		ExecuteMovement(moveRight);
+		HAL_Delay(1300);
+		ExecuteMovement(noMove);
+	}
 }
 /* USER CODE END 0 */
 
